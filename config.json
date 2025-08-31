@@ -1,0 +1,25 @@
+{
+    "tests": [
+        {
+            "id": "ce",
+            "nombre": "Constitución Española",
+            "valor": "CE.json",
+            "total_preguntas": 370,
+            "icono": "CE"
+        },
+        {
+            "id": "lpacap",
+            "nombre": "Ley 39/2015 (LPACAP)",
+            "valor": "ley_39_2015.json",
+            "total_preguntas": 250,
+            "icono": "39"
+        },
+        {
+            "id": "cp",
+            "nombre": "Código Penal (Básico)",
+            "valor": "codigo_penal.json",
+            "total_preguntas": 180,
+            "icono": "CP"
+        }
+    ]
+}

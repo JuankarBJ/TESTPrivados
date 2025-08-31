@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpoTest Pro - Plataforma de Tests</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <header>
+        <nav>
+            <a href="#" class="logo">OpoTest Pro</a>
+            <div class="nav-links">
+                <a href="#">Mi Perfil</a>
+                <a href="#">Estadísticas</a>
+                <a href="#" class="nav-button">Cerrar Sesión</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div id="setup-container">
+            <section class="setup-section">
+                <h2>1. Selecciona las Materias</h2>
+                <div id="materias-container">
+                    </div>
+            </section>
+
+            <section class="setup-section">
+                <h2>2. Configura tu Test</h2>
+                <div class="config-controls">
+                    <label for="num-questions-input">Número de preguntas:</label>
+                    <div class="slider-container">
+                        <input type="range" id="num-questions-slider" min="10" max="100" value="25" step="5">
+                        <input type="number" id="num-questions-input" min="10" max="100" value="25" step="5">
+                    </div>
+                    <small>Total de preguntas disponibles: <strong id="total-available-questions">0</strong></small>
+                </div>
+            </section>
+
+            <button id="start-button" disabled>Generar Test</button>
+        </div>
+
+        <div id="quiz-container" class="hidden">
+            </div>
+        
+        <div id="results-container" class="hidden">
+            </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 OpoTest Pro. Todos los derechos reservados.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
