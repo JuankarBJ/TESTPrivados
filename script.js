@@ -1,42 +1,173 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- Referencias a elementos del DOM (Pantalla de Configuración) ---
+    // --- Referencias a elementos del DOM ---
+    const setupContainerEl = document.getElementById('setup-container');
+    const quizPageLayoutEl = document.getElementById('quiz-page-layout');
+    const modalOverlayEl = document.getElementById('modal-overlay'); // Nuevo
+    const resultsContainerEl = document.getElementById('results-container');
+    // ... (el resto de referencias se mantienen igual)
+    const materiasContainerEl = document.getElementById('materias-container');
+    const totalAvailableEl = document.getElementById('total-available-questions');
+    const numQuestionsSliderEl = document.getElementById('num-questions-slider');
+    const numQuestionsInputEl = document.getElementById('num-questions-input');
+    const startButtonEl = document.getElementById('start-button');
+    
+    // --- Variables de Estado Globales ---
+    let configData = [];
+    let questionsForTest = [];
+
+    // --- LÓGICA DE CONFIGURACIÓN (sin cambios) ---
+    async function initializeApp() { /* ...código anterior sin cambios... */ }
+    function renderMateriaCards() { /* ...código anterior sin cambios... */ }
+    function updateAvailableQuestions() { /* ...código anterior sin cambios... */ }
+    function syncNumberInputs(e) { /* ...código anterior sin cambios... */ }
+    // ... (listeners de configuración sin cambios)
+    
+    // --- INICIO DEL TEST (sin cambios) ---
+    startButtonEl.addEventListener('click', async () => { /* ...código anterior sin cambios... */ });
+
+    function startQuiz() { /* ...código anterior sin cambios... */ }
+
+    // --- FUNCIÓN PARA MOSTRAR LA VENTANA MODAL ---
+    function showModal() {
+        modalOverlayEl.classList.remove('hidden');
+        setTimeout(() => { // Pequeño delay para que la transición CSS funcione
+            modalOverlayEl.classList.add('visible');
+            document.body.classList.add('modal-open'); // Bloquear scroll del fondo
+        }, 10);
+    }
+
+    // --- FUNCIÓN PARA OCULTAR LA VENTANA MODAL ---
+    function hideModal() {
+        modalOverlayEl.classList.remove('visible');
+        document.body.classList.remove('modal-open'); // Desbloquear scroll
+        setTimeout(() => {
+            modalOverlayEl.classList.add('hidden');
+        }, 300); // Esperar que la transición de opacidad termine
+    }
+
+    // --- CÁLCULO DE RESULTADOS (MODIFICADO) ---
+    function calculateAndShowResults() {
+        let correct = 0, incorrect = 0, unanswered = 0;
+        questionsForTest.forEach((q, i) => {
+            const selectedOption = document.querySelector(`input[name="pregunta-${i}"]:checked`);
+            if (!selectedOption) unanswered++;
+            else if (selectedOption.value === q.respuestaCorrecta) correct++;
+            else incorrect++;
+        });
+
+        const netScore = correct - (incorrect / 3);
+        let finalGrade = Math.max(0, (netScore / questionsForTest.length) * 10);
+        
+        // Ya no ocultamos el quiz, el modal se superpondrá
+        // quizPageLayoutEl.classList.add('hidden');
+        
+        resultsContainerEl.innerHTML = `
+            <h1>Resultados del Test</h1>
+            <div class="results-summary">
+                <p>Respuestas Correctas: <strong style="color:var(--success);">${correct}</strong></p>
+                <p>Respuestas Incorrectas: <strong style="color:var(--danger);">${incorrect}</strong></p>
+                <p>Sin Contestar: <strong>${unanswered}</strong></p><hr>
+                <p>Puntos Netos: <strong>${netScore.toFixed(3)}</strong></p>
+            </div>
+            <div class="final-grade-container">
+                <p>Nota Final:</p><p class="final-grade">${finalGrade.toFixed(2)} / 10</p>
+            </div>
+            <div class="results-buttons">
+                <button id="review-button">Revisar Test</button>
+                <button id="restart-button">Hacer otro test</button>
+            </div>`;
+        
+        showModal(); // Mostrar el modal en lugar del div
+        
+        document.getElementById('review-button').addEventListener('click', enterReviewMode);
+        document.getElementById('restart-button').addEventListener('click', () => location.reload());
+    }
+    
+    // --- MODO REVISIÓN (MODIFICADO) ---
+    function enterReviewMode() {
+        hideModal(); // Ocultar el modal antes de entrar en revisión
+
+        // El resto de la lógica de revisión no cambia
+        document.getElementById('quiz-title').textContent = "Modo Revisión";
+        document.getElementById('finish-button-container').classList.add('hidden');
+        
+        questionsForTest.forEach((q, i) => {
+            const questionBlock = document.getElementById(`question-${i}`);
+            const optionsGroup = questionBlock.querySelector('.options-group');
+            const explanationDiv = questionBlock.querySelector('.explanation');
+            const gridItem = document.querySelector(`#question-grid a:nth-child(${i + 1})`);
+            
+            optionsGroup.classList.add('review-mode');
+            const userChoice = document.querySelector(`input[name="pregunta-${i}"]:checked`);
+            
+            if (!userChoice) gridItem.classList.add('unanswered');
+            else if (userChoice.value === q.respuestaCorrecta) gridItem.classList.add('correct');
+            else {
+                gridItem.classList.add('incorrect');
+                document.querySelector(`label[for="${userChoice.id}"]`).classList.add('incorrect');
+            }
+            
+            document.querySelector(`label[for="q${i}_${q.respuestaCorrecta}"]`).classList.add('correct');
+            explanationDiv.innerHTML = q.explicacion;
+            explanationDiv.classList.remove('hidden');
+            optionsGroup.querySelectorAll('input').forEach(radio => radio.disabled = true);
+        });
+
+        quizPageLayoutEl.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // --- INICIALIZACIÓN Y EVENTOS ADICIONALES DEL MODAL ---
+    
+    // Cerrar modal al hacer clic en el fondo oscuro
+    modalOverlayEl.addEventListener('click', (e) => {
+        if (e.target === modalOverlayEl) {
+            hideModal();
+        }
+    });
+
+    // Cerrar modal al pulsar la tecla Escape
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modalOverlayEl.classList.contains('visible')) {
+            hideModal();
+        }
+    });
+    
+    initializeApp();
+
+    // El resto de funciones que no he incluido aquí se mantienen exactamente igual
+    // Esto es para no pegar todo el bloque de código de nuevo.
+    // Solo debes añadir/modificar las funciones `calculateAndShowResults` y `enterReviewMode`
+    // y añadir las nuevas `showModal`, `hideModal` y los dos listeners del modal.
+    // ***** PARA FACILITAR, A CONTINUACIÓN EL CÓDIGO COMPLETO *****
+});
+
+
+// =========================================================================================
+// === CÓDIGO COMPLETO DE SCRIPT.JS PARA COPIAR Y PEGAR (INCLUYE LAS PARTES SIN CAMBIOS) ===
+// =========================================================================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    // --- Referencias a elementos del DOM ---
     const setupContainerEl = document.getElementById('setup-container');
     const materiasContainerEl = document.getElementById('materias-container');
     const totalAvailableEl = document.getElementById('total-available-questions');
     const numQuestionsSliderEl = document.getElementById('num-questions-slider');
     const numQuestionsInputEl = document.getElementById('num-questions-input');
     const startButtonEl = document.getElementById('start-button');
-
-    // --- Referencias a elementos del DOM (Pantalla de Test y Resultados) ---
-    const quizContainerEl = document.getElementById('quiz-container');
+    const quizPageLayoutEl = document.getElementById('quiz-page-layout');
+    const modalOverlayEl = document.getElementById('modal-overlay');
     const resultsContainerEl = document.getElementById('results-container');
-    const quizTitleEl = document.getElementById('quiz-title');
-    const questionCounterEl = document.getElementById('question-counter');
-    const questionGridEl = document.getElementById('question-grid');
-    const questionTextEl = document.getElementById('question-text');
-    const optionsContainerEl = document.getElementById('options-container');
-    const reviewFeedbackAreaEl = document.getElementById('review-feedback-area');
-    const explanationTextEl = document.getElementById('explanation-text');
-    const prevButtonEl = document.getElementById('prev-button');
-    const nextButtonEl = document.getElementById('next-button');
-    const finishButtonEl = document.getElementById('finish-button');
     
-    // --- Variables de Estado Globales ---
-    let configData = [];
-    let questionsForTest = [];
-    let userAnswers = [];
-    let currentQuestionIndex = 0;
-    let appState = 'SETUP'; // SETUP, TESTING, RESULTS, REVIEW
-
-    // --- LÓGICA DE LA PANTALLA DE CONFIGURACIÓN ---
+    let configData = [], questionsForTest = [];
 
     async function initializeApp() {
         try {
             const response = await fetch('config.json');
             configData = (await response.json()).tests;
             renderMateriaCards();
+            updateAvailableQuestions();
         } catch (error) {
-            materiasContainerEl.innerHTML = `<p style="color:red;">Error: No se pudo cargar el archivo 'config.json'.</p>`;
+            materiasContainerEl.innerHTML = `<p style="color:red;">Error al cargar 'config.json'.</p>`;
         }
     }
 
@@ -45,10 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
         configData.forEach(test => {
             const card = document.createElement('div');
             card.classList.add('materia-card');
-            card.innerHTML = `
-                <input type="checkbox" id="${test.id}" data-questions="${test.total_preguntas}" value="${test.valor}">
-                <label for="${test.id}">${test.nombre}</label>
-                <div class="materia-info"><span>${test.total_preguntas} preguntas disponibles</span></div>`;
+            card.innerHTML = `<input type="checkbox" id="${test.id}" data-questions="${test.total_preguntas}" value="${test.valor}"><label for="${test.id}">${test.nombre}</label><div class="materia-info"><span>${test.total_preguntas} preguntas disponibles</span></div>`;
             materiasContainerEl.appendChild(card);
         });
         materiasContainerEl.addEventListener('change', updateAvailableQuestions);
@@ -57,241 +185,148 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateAvailableQuestions() {
         const checkedBoxes = materiasContainerEl.querySelectorAll('input[type="checkbox"]:checked');
         let totalQuestions = 0;
-        checkedBoxes.forEach(box => {
-            totalQuestions += parseInt(box.dataset.questions, 10);
-        });
+        checkedBoxes.forEach(box => { totalQuestions += parseInt(box.dataset.questions, 10); });
         totalAvailableEl.textContent = totalQuestions;
-        
-        numQuestionsSliderEl.max = totalQuestions > 0 ? totalQuestions : 100;
-        numQuestionsInputEl.max = totalQuestions > 0 ? totalQuestions : 100;
-        if (parseInt(numQuestionsInputEl.value, 10) > totalQuestions) {
-            numQuestionsInputEl.value = totalQuestions;
-            numQuestionsSliderEl.value = totalQuestions;
+        numQuestionsSliderEl.max = totalQuestions > 0 ? totalQuestions : 1;
+        numQuestionsInputEl.max = totalQuestions > 0 ? totalQuestions : 1;
+        numQuestionsSliderEl.min = totalQuestions > 0 ? 1 : 1;
+        numQuestionsInputEl.min = totalQuestions > 0 ? 1 : 1;
+        if (parseInt(numQuestionsInputEl.value, 10) > totalQuestions || parseInt(numQuestionsInputEl.value, 10) < 1) {
+            numQuestionsInputEl.value = totalQuestions > 0 ? Math.min(25, totalQuestions) : 1;
+            numQuestionsSliderEl.value = numQuestionsInputEl.value;
+        } else if (checkedBoxes.length > 0 && totalQuestions > 0 && parseInt(numQuestionsInputEl.value, 10) === 0) {
+            numQuestionsInputEl.value = 1;
+            numQuestionsSliderEl.value = 1;
         }
-        
-        startButtonEl.disabled = (checkedBoxes.length === 0 || totalQuestions === 0 || numQuestionsInputEl.value < 1);
+        startButtonEl.disabled = (checkedBoxes.length === 0 || totalQuestions === 0 || parseInt(numQuestionsInputEl.value, 10) < 1);
     }
-    
+
     function syncNumberInputs(e) {
-        const value = e.target.value;
-        if (parseInt(value) > parseInt(numQuestionsInputEl.max)) {
-            e.target.value = numQuestionsInputEl.max;
-        }
-        numQuestionsSliderEl.value = e.target.value;
-        numQuestionsInputEl.value = e.target.value;
-        updateAvailableQuestions(); // Re-validar el botón de inicio
+        let value = parseInt(e.target.value, 10);
+        const max = parseInt(numQuestionsInputEl.max, 10);
+        const min = parseInt(numQuestionsInputEl.min, 10);
+        if (isNaN(value)) value = min;
+        if (value > max) value = max;
+        if (value < min) value = min;
+        numQuestionsSliderEl.value = value;
+        numQuestionsInputEl.value = value;
+        updateAvailableQuestions();
     }
     numQuestionsSliderEl.addEventListener('input', syncNumberInputs);
     numQuestionsInputEl.addEventListener('input', syncNumberInputs);
 
-    // --- LÓGICA PARA INICIAR EL TEST ---
-    
     startButtonEl.addEventListener('click', async () => {
         const checkedBoxes = materiasContainerEl.querySelectorAll('input[type="checkbox"]:checked');
-        const filesToLoad = Array.from(checkedBoxes).map(box => box.value);
+        const filesToLoad = Array.from(checkedBoxes).map(box => configData.find(t => t.id === box.id).valor);
         const numQuestions = parseInt(numQuestionsInputEl.value, 10);
-
         setupContainerEl.innerHTML = '<h2>Cargando preguntas, por favor espera...</h2>';
-        
         try {
             const promises = filesToLoad.map(file => fetch(file).then(res => res.json()));
             const questionArrays = await Promise.all(promises);
             const allQuestions = questionArrays.flat();
-            
             allQuestions.sort(() => Math.random() - 0.5);
-            const selectedQuestions = allQuestions.slice(0, numQuestions);
-            
-            // **FIX: Conectamos con el motor del test, pasando las preguntas cargadas**
-            startQuiz(selectedQuestions);
-            
+            questionsForTest = allQuestions.slice(0, numQuestions);
+            startQuiz();
         } catch (error) {
-            setupContainerEl.innerHTML = `<p style="color:red;">Error al cargar uno de los archivos de preguntas. Revisa que los nombres en 'config.json' sean correctos.</p>`;
+            setupContainerEl.innerHTML = `<p style="color:red;">Error al cargar archivos de preguntas.</p>`;
         }
     });
 
-    // --- MOTOR DEL TEST Y REVISIÓN ---
-
-    function startQuiz(loadedQuestions) {
-        appState = 'TESTING';
-        questionsForTest = loadedQuestions;
-        userAnswers = new Array(questionsForTest.length).fill(null);
-        currentQuestionIndex = 0;
-        
+    function startQuiz() {
         setupContainerEl.classList.add('hidden');
-        resultsContainerEl.classList.add('hidden');
-        quizContainerEl.innerHTML = `
-            <div id="quiz-header">
-                <h2 id="quiz-title">Test en Progreso</h2>
-                <div id="question-counter"></div>
-            </div>
-            <div id="question-grid"></div>
-            <div id="question-area">
-                <p id="question-text"></p>
-                <div id="options-container"></div>
-            </div>
-            <div id="review-feedback-area" class="hidden">
-                <p id="explanation-text"></p>
-            </div>
-            <div id="quiz-navigation">
-                <button id="prev-button">Anterior</button>
-                <button id="next-button">Siguiente</button>
-                <button id="finish-button">Finalizar Test</button>
-            </div>`;
-        quizContainerEl.classList.remove('hidden');
-
-        // Re-asignar listeners a los nuevos elementos del DOM
-        const prevBtn = document.getElementById('prev-button');
-        const nextBtn = document.getElementById('next-button');
-        const finishBtn = document.getElementById('finish-button');
-        prevBtn.addEventListener('click', () => navigateToQuestion(currentQuestionIndex - 1));
-        nextBtn.addEventListener('click', () => navigateToQuestion(currentQuestionIndex + 1));
-        finishBtn.addEventListener('click', finishTest);
-
-        renderQuestionGrid();
-        navigateToQuestion(0);
-    }
-    
-    function renderQuestionGrid() {
-        const grid = quizContainerEl.querySelector('#question-grid');
-        grid.innerHTML = '';
-        questionsForTest.forEach((_, index) => {
-            const gridItem = document.createElement('div');
+        quizPageLayoutEl.classList.remove('hidden');
+        const allQuestionsContainer = document.getElementById('all-questions-container');
+        const questionGrid = document.getElementById('question-grid');
+        allQuestionsContainer.innerHTML = '';
+        questionGrid.innerHTML = '';
+        questionsForTest.forEach((question, index) => {
+            let optionsHTML = '';
+            for (const key in question.opciones) {
+                optionsHTML += `<input type="radio" name="pregunta-${index}" id="q${index}_${key}" value="${key}"><label for="q${index}_${key}"><b>${key.toUpperCase()}.</b> ${question.opciones[key]}</label>`;
+            }
+            const questionBlock = document.createElement('div');
+            questionBlock.classList.add('question-block');
+            questionBlock.id = `question-${index}`;
+            questionBlock.innerHTML = `<div class="question-header"><span class="question-number">${index + 1}.</span><p class="question-text">${question.pregunta}</p></div><div class="options-group" data-question-index="${index}">${optionsHTML}</div><div class="explanation hidden"></div>`;
+            allQuestionsContainer.appendChild(questionBlock);
+            const gridItem = document.createElement('a');
             gridItem.classList.add('grid-item');
             gridItem.textContent = index + 1;
-            gridItem.dataset.index = index;
-            gridItem.addEventListener('click', () => navigateToQuestion(index));
-            grid.appendChild(gridItem);
+            gridItem.href = `#question-${index}`;
+            gridItem.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.getElementById(`question-${index}`).scrollIntoView({ behavior: 'smooth', block: 'center' });
+            });
+            questionGrid.appendChild(gridItem);
         });
+        allQuestionsContainer.addEventListener('change', (e) => {
+            if (e.target.type === 'radio') {
+                const questionIndex = e.target.name.split('-')[1];
+                document.querySelector(`#question-grid a:nth-child(${parseInt(questionIndex) + 1})`).classList.add('answered');
+            }
+        });
+        document.getElementById('finish-button').addEventListener('click', calculateAndShowResults);
     }
 
-    function navigateToQuestion(index) {
-        if (index < 0 || index >= questionsForTest.length) return;
-        currentQuestionIndex = index;
-
-        if (appState === 'TESTING') showQuestionForTest(index);
-        else if (appState === 'REVIEW') showQuestionInReview(index);
+    function showModal() {
+        modalOverlayEl.classList.remove('hidden');
+        setTimeout(() => {
+            modalOverlayEl.classList.add('visible');
+            document.body.classList.add('modal-open');
+        }, 10);
     }
 
-    function showQuestionForTest(index) {
-        const question = questionsForTest[index];
-        const qText = quizContainerEl.querySelector('#question-text');
-        const optsContainer = quizContainerEl.querySelector('#options-container');
-
-        qText.textContent = question.pregunta;
-        optsContainer.innerHTML = '';
-        
-        for (const key in question.opciones) {
-            const button = document.createElement('button');
-            button.classList.add('option-btn');
-            button.dataset.key = key;
-            button.innerHTML = `<b>${key.toUpperCase()}.</b> ${question.opciones[key]}`;
-            if (userAnswers[index] === key) button.classList.add('selected');
-            button.addEventListener('click', selectAnswer);
-            optsContainer.appendChild(button);
-        }
-        updateUI();
-    }
-    
-    function selectAnswer(e) {
-        const selectedKey = e.currentTarget.dataset.key;
-        userAnswers[currentQuestionIndex] = (userAnswers[currentQuestionIndex] === selectedKey) ? null : selectedKey;
-        
-        const gridItem = quizContainerEl.querySelector(`[data-index="${currentQuestionIndex}"]`);
-        gridItem.classList.toggle('answered', userAnswers[currentQuestionIndex] !== null);
-        showQuestionForTest(currentQuestionIndex);
-    }
-
-    function updateUI() {
-        quizContainerEl.querySelector('#question-counter').innerHTML = `Pregunta <span>${currentQuestionIndex + 1}</span>/<span>${questionsForTest.length}</span>`;
-        quizContainerEl.querySelectorAll('.grid-item').forEach(item => item.classList.remove('active'));
-        quizContainerEl.querySelector(`[data-index="${currentQuestionIndex}"]`).classList.add('active');
-        quizContainerEl.querySelector('#prev-button').disabled = currentQuestionIndex === 0;
-        quizContainerEl.querySelector('#next-button').disabled = currentQuestionIndex === questionsForTest.length - 1;
-    }
-
-    function finishTest() {
-        const unansweredCount = userAnswers.filter(a => a === null).length;
-        if (confirm(`Has dejado ${unansweredCount} preguntas sin contestar. ¿Estás seguro de que quieres finalizar?`)) {
-            calculateAndShowResults();
-        }
+    function hideModal() {
+        modalOverlayEl.classList.remove('visible');
+        document.body.classList.remove('modal-open');
+        setTimeout(() => {
+            modalOverlayEl.classList.add('hidden');
+        }, 300);
     }
 
     function calculateAndShowResults() {
-        appState = 'RESULTS';
         let correct = 0, incorrect = 0, unanswered = 0;
         questionsForTest.forEach((q, i) => {
-            if (userAnswers[i] === null) unanswered++;
-            else if (userAnswers[i] === q.respuestaCorrecta) correct++;
+            const selectedOption = document.querySelector(`input[name="pregunta-${i}"]:checked`);
+            if (!selectedOption) unanswered++;
+            else if (selectedOption.value === q.respuestaCorrecta) correct++;
             else incorrect++;
         });
         const netScore = correct - (incorrect / 3);
         let finalGrade = Math.max(0, (netScore / questionsForTest.length) * 10);
-
-        resultsContainerEl.innerHTML = `
-            <h1>Resultados del Test</h1>
-            <div class="results-summary">
-                <p>Respuestas Correctas: <strong style="color:var(--success);">${correct}</strong></p>
-                <p>Respuestas Incorrectas: <strong style="color:var(--danger);">${incorrect}</strong></p>
-                <p>Sin Contestar: <strong>${unanswered}</strong></p><hr>
-                <p>Puntos Netos (Aciertos - Errores/3): <strong>${netScore.toFixed(3)}</strong></p>
-            </div>
-            <div class="final-grade-container" style="background-color:var(--primary-color); color:white; padding:20px; border-radius:10px; text-align:center; margin:20px 0;">
-                <p style="margin:0;">Nota Final:</p><p style="font-size:3em; font-weight:bold; margin:0;">${finalGrade.toFixed(2)} / 10</p>
-            </div>
-            <div class="results-buttons" style="display:flex; justify-content:space-between; margin-top:30px;">
-                <button id="review-button" style="width:48%; padding:15px; font-size:1.1em; font-weight:bold; color:white; background-color:var(--primary-color); border:none; border-radius:8px; cursor:pointer;">Revisar Test</button>
-                <button onclick="location.reload()" style="width:48%; padding:15px; font-size:1.1em; font-weight:bold; color:white; background-color:var(--secondary-color); border:none; border-radius:8px; cursor:pointer;">Hacer otro test</button>
-            </div>`;
-        quizContainerEl.classList.add('hidden');
-        resultsContainerEl.classList.remove('hidden');
-
+        resultsContainerEl.innerHTML = `<h1>Resultados del Test</h1><div class="results-summary"><p>Respuestas Correctas: <strong style="color:var(--success);">${correct}</strong></p><p>Respuestas Incorrectas: <strong style="color:var(--danger);">${incorrect}</strong></p><p>Sin Contestar: <strong>${unanswered}</strong></p><hr><p>Puntos Netos: <strong>${netScore.toFixed(3)}</strong></p></div><div class="final-grade-container"><p>Nota Final:</p><p class="final-grade">${finalGrade.toFixed(2)} / 10</p></div><div class="results-buttons"><button id="review-button">Revisar Test</button><button id="restart-button">Hacer otro test</button></div>`;
+        showModal();
         document.getElementById('review-button').addEventListener('click', enterReviewMode);
+        document.getElementById('restart-button').addEventListener('click', () => location.reload());
     }
     
     function enterReviewMode() {
-        appState = 'REVIEW';
-        resultsContainerEl.classList.add('hidden');
-        quizContainerEl.classList.remove('hidden');
-        quizContainerEl.querySelector('#quiz-title').textContent = "Modo Revisión";
-        quizContainerEl.querySelector('#finish-button').style.display = 'none';
-
-        const grid = quizContainerEl.querySelector('#question-grid');
-        grid.querySelectorAll('.grid-item').forEach((item, index) => {
-            item.classList.remove('answered', 'active');
-            if (userAnswers[index] === null) item.classList.add('unanswered');
-            else if (userAnswers[index] === questionsForTest[index].respuestaCorrecta) item.classList.add('correct');
-            else item.classList.add('incorrect');
+        hideModal();
+        document.getElementById('quiz-title').textContent = "Modo Revisión";
+        document.getElementById('finish-button-container').classList.add('hidden');
+        questionsForTest.forEach((q, i) => {
+            const questionBlock = document.getElementById(`question-${i}`);
+            const optionsGroup = questionBlock.querySelector('.options-group');
+            const explanationDiv = questionBlock.querySelector('.explanation');
+            const gridItem = document.querySelector(`#question-grid a:nth-child(${i + 1})`);
+            optionsGroup.classList.add('review-mode');
+            const userChoice = document.querySelector(`input[name="pregunta-${i}"]:checked`);
+            if (!userChoice) gridItem.classList.add('unanswered');
+            else if (userChoice.value === q.respuestaCorrecta) gridItem.classList.add('correct');
+            else {
+                gridItem.classList.add('incorrect');
+                if (userChoice) document.querySelector(`label[for="${userChoice.id}"]`).classList.add('incorrect');
+            }
+            document.querySelector(`label[for="q${i}_${q.respuestaCorrecta}"]`).classList.add('correct');
+            explanationDiv.innerHTML = q.explicacion;
+            explanationDiv.classList.remove('hidden');
+            optionsGroup.querySelectorAll('input').forEach(radio => radio.disabled = true);
         });
-        navigateToQuestion(0);
+        document.getElementById('quiz-page-layout').scrollIntoView({ behavior: 'smooth' });
     }
+
+    modalOverlayEl.addEventListener('click', (e) => { if (e.target === modalOverlayEl) hideModal(); });
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modalOverlayEl.classList.contains('visible')) hideModal(); });
     
-    function showQuestionInReview(index) {
-        const question = questionsForTest[index];
-        const userAnswer = userAnswers[index];
-        const correctKey = question.respuestaCorrecta;
-
-        const qText = quizContainerEl.querySelector('#question-text');
-        const optsContainer = quizContainerEl.querySelector('#options-container');
-        const feedbackArea = quizContainerEl.querySelector('#review-feedback-area');
-        const explanationArea = quizContainerEl.querySelector('#explanation-text');
-
-        qText.textContent = question.pregunta;
-        optsContainer.innerHTML = '';
-        
-        for (const key in question.opciones) {
-            const button = document.createElement('button');
-            button.classList.add('option-btn');
-            button.innerHTML = `<b>${key.toUpperCase()}.</b> ${question.opciones[key]}`;
-            if (key === correctKey) button.classList.add('correct');
-            else if (key === userAnswer) button.classList.add('incorrect');
-            optsContainer.appendChild(button);
-        }
-        
-        explanationArea.innerHTML = question.explicacion;
-        feedbackArea.classList.remove('hidden');
-        updateUI();
-    }
-
-    // Iniciar la aplicación
     initializeApp();
 });

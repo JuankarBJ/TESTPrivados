@@ -43,11 +43,29 @@
             <button id="start-button" disabled>Generar Test</button>
         </div>
 
-        <div id="quiz-container" class="hidden">
+        <div id="quiz-page-layout" class="hidden"> 
+            <div id="quiz-main-content">
+                <div id="quiz-header">
+                    <h2 id="quiz-title">Test en Progreso</h2>
+                </div>
+                <div id="all-questions-container">
+                    </div>
             </div>
+
+            <div id="quiz-sidebar">
+                <h3>Preguntas</h3>
+                <div id="question-grid">
+                    </div>
+                <div id="finish-button-container">
+                    <button id="finish-button">Finalizar y Corregir</button>
+                </div>
+            </div>
+        </div>
         
-        <div id="results-container" class="hidden">
-            </div>
+        <div id="modal-overlay" class="hidden">
+            <div id="results-container">
+                </div>
+        </div>
     </main>
 
     <footer>
